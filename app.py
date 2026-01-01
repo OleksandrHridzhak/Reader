@@ -81,7 +81,13 @@ def extract_text_from_pdf(pdf_file) -> str:
             if text:
                 text_content.append(text)
         
-        return '\n'.join(text_content)
+        result = '\n'.join(text_content)
+        
+        # Check if any text was extracted
+        if not result.strip():
+            raise Exception("No text content found in PDF. The PDF may be scanned or image-based.")
+        
+        return result
     except Exception as e:
         raise Exception(f"Error extracting text from PDF: {e}")
 
@@ -315,6 +321,9 @@ def main():
                 if book_title not in books_data:
                     if st.button(f"Process {book_title}", key=f"process_{book_title}"):
                         try:
+                            # Reset file pointer to beginning before reading
+                            uploaded_file.seek(0)
+                            
                             if file_extension == 'pdf':
                                 # Extract text from PDF
                                 book_content = extract_text_from_pdf(uploaded_file)
