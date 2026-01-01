@@ -5,6 +5,7 @@ import os
 import random
 import html
 from typing import Dict, List, Optional
+from pypdf import PdfReader
 
 # Page configuration
 st.set_page_config(
@@ -68,6 +69,21 @@ def save_books_data(data: Dict) -> None:
             json.dump(data, f, indent=2, ensure_ascii=False)
     except Exception as e:
         st.error(f"Error saving books data: {e}")
+
+def extract_text_from_pdf(pdf_file) -> str:
+    """Extract text content from a PDF file."""
+    try:
+        pdf_reader = PdfReader(pdf_file)
+        text_content = []
+        
+        for page in pdf_reader.pages:
+            text = page.extract_text()
+            if text:
+                text_content.append(text)
+        
+        return '\n'.join(text_content)
+    except Exception as e:
+        raise Exception(f"Error extracting text from PDF: {e}")
 
 def configure_gemini(api_key: str) -> bool:
     """Configure Gemini API."""
@@ -279,25 +295,33 @@ def main():
         st.divider()
         
         st.header("📤 Upload Books")
-        st.write("Upload 3-4 .txt files")
+        st.write("Upload 3-4 .txt or .pdf files")
         
         uploaded_files = st.file_uploader(
-            "Choose text files",
-            type=['txt'],
+            "Choose text or PDF files",
+            type=['txt', 'pdf'],
             accept_multiple_files=True,
             key="file_uploader"
         )
         
         if uploaded_files and api_key:
             for uploaded_file in uploaded_files:
-                book_title = uploaded_file.name.replace('.txt', '')
+                # Extract book title and determine file type
+                file_extension = uploaded_file.name.split('.')[-1].lower()
+                book_title = uploaded_file.name.rsplit('.', 1)[0]
                 
                 # Check if book already exists
                 books_data = load_books_data()
                 if book_title not in books_data:
                     if st.button(f"Process {book_title}", key=f"process_{book_title}"):
                         try:
-                            book_content = uploaded_file.read().decode('utf-8', errors='replace')
+                            if file_extension == 'pdf':
+                                # Extract text from PDF
+                                book_content = extract_text_from_pdf(uploaded_file)
+                            else:
+                                # Read as text file
+                                book_content = uploaded_file.read().decode('utf-8', errors='replace')
+                            
                             process_uploaded_book(book_title, book_content, api_key)
                         except Exception as e:
                             st.error(f"Error reading {book_title}: {e}")

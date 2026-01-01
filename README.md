@@ -4,7 +4,7 @@ A Streamlit-based application that helps you read multiple books simultaneously 
 
 ## Features
 
-- **Upload Multiple Books**: Support for 3-4 .txt files
+- **Upload Multiple Books**: Support for 3-4 .txt or .pdf files
 - **AI-Powered Segmentation**: Uses Google Gemini to split books into logical ~5000-word segments
 - **Smart Randomization**: "Give me something to read" button picks a random unread segment
 - **Context Summaries**: AI-generated "Where we left off" summaries for continuing segments
@@ -40,7 +40,7 @@ streamlit run app.py
 ## Usage
 
 1. **Enter API Key**: In the sidebar, enter your Google Gemini API key
-2. **Upload Books**: Upload 3-4 .txt files using the file uploader
+2. **Upload Books**: Upload 3-4 .txt or .pdf files using the file uploader
 3. **Process Books**: Click the "Process [book name]" button for each uploaded book
 4. **Start Reading**: Click the big "📖 Give me something to read" button
 5. **Continue Reading**: Keep clicking the button to get random segments from your books
@@ -107,13 +107,14 @@ SEGMENT_WORD_COUNT = 5000  # Change this value
 - API usage is subject to Google's rate limits and quotas
 - Best suited for narrative text files (novels, stories)
 - Maximum file size limited by Streamlit (200MB per file)
+- PDF text extraction quality depends on the PDF structure (scanned PDFs without OCR may not work)
 
 ## Troubleshooting
 
 **Books not processing?**
 - Verify your API key is correct
 - Check your internet connection
-- Ensure the .txt file is properly formatted
+- Ensure the .txt file is properly formatted or the PDF is text-based (not scanned images)
 
 **Segments seem odd?**
 - The AI does its best to find natural breaks, but may not always be perfect
