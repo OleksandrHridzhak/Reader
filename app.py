@@ -3,6 +3,7 @@ import google.generativeai as genai
 import json
 import os
 import random
+import html
 from typing import Dict, List, Optional
 
 # Page configuration
@@ -67,10 +68,6 @@ def save_books_data(data: Dict) -> None:
             json.dump(data, f, indent=2, ensure_ascii=False)
     except Exception as e:
         st.error(f"Error saving books data: {e}")
-
-def count_words(text: str) -> int:
-    """Count words in text."""
-    return len(text.split())
 
 def configure_gemini(api_key: str) -> bool:
     """Configure Gemini API."""
@@ -300,7 +297,7 @@ def main():
                 if book_title not in books_data:
                     if st.button(f"Process {book_title}", key=f"process_{book_title}"):
                         try:
-                            book_content = uploaded_file.read().decode('utf-8')
+                            book_content = uploaded_file.read().decode('utf-8', errors='replace')
                             process_uploaded_book(book_title, book_content, api_key)
                         except Exception as e:
                             st.error(f"Error reading {book_title}: {e}")
@@ -378,7 +375,9 @@ def main():
             if 'current_display' in st.session_state:
                 display_data = st.session_state.current_display
                 
-                st.markdown(f"<div class='book-title'>📖 {display_data['book_title']}</div>", unsafe_allow_html=True)
+                # Escape HTML to prevent XSS
+                safe_book_title = html.escape(display_data['book_title'])
+                st.markdown(f"<div class='book-title'>📖 {safe_book_title}</div>", unsafe_allow_html=True)
                 st.write(f"*Segment {display_data['segment_index'] + 1} of {books_data[display_data['book_title']]['total_segments']}*")
                 
                 # Generate and display summary if not first segment
@@ -390,10 +389,13 @@ def main():
                             display_data['segment_text'],
                             api_key
                         )
-                        st.markdown(f"<div class='summary-box'>{summary}</div>", unsafe_allow_html=True)
+                        # Escape HTML and preserve line breaks
+                        safe_summary = html.escape(summary).replace('\n', '<br>')
+                        st.markdown(f"<div class='summary-box'>{safe_summary}</div>", unsafe_allow_html=True)
                 
-                # Display the segment text
-                st.markdown(f"<div class='reading-area'>{display_data['segment_text']}</div>", unsafe_allow_html=True)
+                # Display the segment text with HTML escaping to prevent XSS, preserving formatting
+                safe_segment_text = html.escape(display_data['segment_text']).replace('\n', '<br>')
+                st.markdown(f"<div class='reading-area'>{safe_segment_text}</div>", unsafe_allow_html=True)
                 
                 # Show progress
                 current_progress = calculate_progress(books_data[display_data['book_title']])
