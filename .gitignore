@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Streamlit
+.streamlit/
+
+# Application data
+books_data.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
